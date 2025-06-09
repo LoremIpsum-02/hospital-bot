@@ -1,65 +1,77 @@
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 const config = require("./bot-config");
+const { inlineKeyboard } = require("telegraf/markup");
 
 // Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, config.options);
 
-// Обработчик команды /start
-bot.onText(/\/start/, (msg) => {
-	const chatId = msg.chat.id;
-	const { text, buttons } = config.commands.start;
+// Команды боты
+bot.setMyCommands([
+	{
+		command: "/start",
+		description: "Запустить/перезапустить бота",
+	},
+	{
+		command: "/faq",
+		description: "Частые вопросы",
+	},
+])
 
-	const opts = {
-		reply_markup: {
-			inline_keyboard: buttons,
-		},
-	};
+const startOptions = {
+	reply_markup: JSON.stringify({
+		inline_keyboard:[
+			[
+				{
+					text: "Button 1",
+					callback_data: "callback_query",
+				},
+				{
+					text: "Button 2",
+					callback_data: "callback_query",
+				},
+			],
+			[
+				{
+					text: "Button 3",
+					callback_data: "callback_query",
+				},
+				{
+					text: "Button 4",
+					callback_data: "callback_query",
+				},
+			],
+		]
+	})
+}
 
-	bot.sendMessage(chatId, text, opts);
-});
+// Получение сообщения
+bot.on("message", async (msg) => {
+	const nameOfUser = msg.chat.first_name
+	const chatId = msg.chat.id
+	const messageText = msg?.text
 
-bot.onText(/\/info (.+)/, async (msg, match) => {
-	const chatId = msg.chat.id;
-	const userId = match[1];
+	console.log(msg)
 
-	try {
-		const user = await getUserFromDB(userId); // Ваша асинхронная функция
-		bot.sendMessage(chatId, `Информация о пользователе: ${user.name}`);
-	} catch (error) {
-		bot.sendMessage(chatId, config.messages.error);
+	if(messageText.toLowerCase() == "/start"){
+		return bot.sendMessage(chatId, 
+			`Приветствую, ${nameOfUser} \n \nЭто бот ЦРБ`, startOptions).then((sentMessage) => {
+				bot.once("callback_query", (query) => {
+					bot.deleteMessage(chatId, sentMessage.message_id)
+				})
+			})
 	}
-});
-
-// Обработчик callback-кнопок
-bot.on("callback_query", (query) => {
-	const chatId = query.message.chat.id;
-	const data = query.data;
-
-	switch (data) {
-		case "btn1":
-			bot.sendMessage(chatId, "Вы нажали кнопку 1!");
-			break;
-		case "btn2":
-			bot.sendMessage(chatId, "Вы нажали кнопку 2!");
-			break;
-		default:
-			bot.sendMessage(chatId, config.messages.unknown);
+	else{
+		return await bot.sendMessage(chatId, "Неизвестная команда")
 	}
-});
+})
 
-// Обработчик текстовых сообщений
-bot.on("message", (msg) => {
-	if (msg.text.toString().toLowerCase().includes("привет")) {
-		bot.sendMessage(msg.chat.id, "Привет, человек!");
-	} else{
-		bot.sendMessage(msg.chat.id, "Message received")
-	}
-});
+// bot.on("callback_query", async (msg) => {
+// 	const chatId = msg.message.chat.id
+// 	const data = msg.data
+// 	console.log("Message : ", msg)
 
-// Обработка ошибок
-bot.on("polling_error", (error) => {
-	console.error(`Polling error: ${error}`);
-});
+// 	return await bot.sendMessage(chatId, `Data : ${data}`)
+// })
 
 console.log("The bot started successfully");
