@@ -15,72 +15,7 @@ bot.setMyCommands(config.commands);
 const awaitingQuestion = new Map();
 const pendingReplies = new Map();
 
-// Texts
-const FAQ_text = `
-*❓ Частые вопросы*
-
-*Как записаться к детскому стоматологу?*
-└ Запись к детскому стоматологу открывается по понедельникам каждую неделю, запись через call-центр: +7(301)237-99-38
-
-*Как записаться к врачу офтальмологу?*
-└ Запись к врачу офтальмологу открывается каждую пятницу, записаться можно по телефону +7(301)237-99-38
-
-*Нужно ли беременным записываться к терапевту для подписания осмотра?*
-└ Да, нужно
-
-*Где можно поставить печать о прохождении ФЛГ?*
-└ Результаты ФЛГ готовы на следующий день, после прохождения ФЛГ
-
-*Сколько стоит водительская справка?*
-└ Категория В - 915 рублей, категория С - 1130 рублей
-
-*Для прохождения маммография нужно направление?*
-└ Да
-
-*Как позвонить в терапевтическое отделение?*
-└ +7(301)237-99-63, доб 106
-
-*Как узнать о поступлении льготного лекарственного препарата?*
-└ Пройдите по ссылке https://t.me/petrcrb  в телеграмм канал Здоровье Джиды в теме "Аптека ГБУЗ Петропавловская ЦРБ" можете задать вопрос об интересующимся лекарственном препарате
-
-*В какой день недели можно пройти диспансеризацию определенных групп  взрослого населения?*
-└ В любой день, в кабинете профилактики
-`;
-
-const schedule_text = `
-*🕒 Информация о режиме работы*
-
-*Администрация :* Пн-Пт: 08:00 - 17:00
-
-*Стационар :* круглосуточно
-
-*Поликлиника :* Пн-Пт: 08:00 - 16:12
-
-*Рентген кабинет :* 08:00-15:00
-
-*Касса платных услуг :* 
-Пн: 08:00-12:00 
-Ср: 08:00-12:00, 13:00-16:00 
-Пт: 08:00-12:00 
-Вт, Чт: каса не работает
-
-*Приём лабораторных анализов :* 
-Пн-Пт: 08:00 - 10:00, выдача результатов с 15:00
-
-*Регистратура поликлиники :* 
-Пн-Пт: 08:00 - 16:12 
-Тел: +7-301-237-11-26
-
-
-
-*Горячая линия по обращению граждан :* 
-Тел: +7-301-243-50-38
-
-*Приёмная главного врача :* 
-Тел: +7(3012)37-99-63
-`;
-
-// Clear chat function
+// Clear chat
 async function clearChat(chatID) {
 	const allBotMessages = messagesStore.get(chatID) || [];
 	messagesStore.delete(chatID);
@@ -94,15 +29,67 @@ async function clearChat(chatID) {
 	}
 }
 
+// Send text function
+async function sendText(chatID, text, params) {
+	const sent = await bot.sendMessage(chatID, text, {
+		parse_mode: "Markdown",
+		disable_web_page_preview: true,
+		...params,
+	});
+
+	const IDs = messagesStore.get(chatID) || [];
+	messagesStore.set(chatID, [...IDs, sent.message_id]);
+}
+
 // Сообщения
+async function sendMainMenu(chatID) {
+	return await sendText(
+		chatID,
+		`Что вас интересует?`,
+		config.mainMenu.inlineButtons
+	);
+}
 async function sendUnknownCommand(chatID) {
-	return await bot.sendMessage(chatID, "Неизвестная команда");
+	return await sendText(chatID, "Неизвестная команда");
+}
+
+async function sendSchedule(chatID) {
+	return await sendText(chatID, config.textsList.schedule, {
+		reply_markup: config.mainMenu.backButton.reply_markup,
+	});
+}
+
+async function sendContacts(chatID) {
+	return await sendText(chatID, config.textsList.contacts, {
+		reply_markup: config.mainMenu.backButton.reply_markup,
+	});
+}
+
+async function sendAppointment(chatID) {
+	return await sendText(chatID, config.textsList.appointment, {
+		reply_markup: config.mainMenu.backButton.reply_markup,
+	});
+}
+
+async function sendExamination(chatID) {
+	return await sendText(chatID, config.textsList.appointment, {
+		reply_markup: config.mainMenu.backButton.reply_markup,
+	});
+}
+
+async function sendResearches(chatID) {
+	await sendText(chatID, config.textsList.researches.mainText, {
+		reply_markup: {
+			inline_keyboard: [
+				...config.researchesTypes.reply_markup.inline_keyboard,
+				...config.mainMenu.backButton.reply_markup.inline_keyboard,
+			],
+		},
+	});
 }
 
 async function sendFAQ(chatID) {
-	return await bot.sendMessage(chatID, FAQ_text, {
-		parse_mode: "Markdown",
-		disable_web_page_preview: true,
+	return await sendText(chatID, config.textsList.faq, {
 		reply_markup: {
 			inline_keyboard: [
 				[
@@ -117,27 +104,8 @@ async function sendFAQ(chatID) {
 	});
 }
 
-async function sendSchedule(chatID) {
-	return await bot.sendMessage(chatID, schedule_text, {
-		parse_mode: "Markdown",
-		disable_web_page_preview: true,
-		reply_markup: config.mainMenu.backButton.reply_markup,
-	});
-}
-
-async function sendMainMenu(chatID) {
-	const sent = await bot.sendMessage(
-		chatID,
-		`Что вас интересует?`,
-		config.mainMenu.inlineButtons
-	);
-
-	const IDs = messagesStore.get(chatID) || [];
-	messagesStore.set(chatID, [...IDs, sent.message_id]);
-}
-
 async function confirmQuestion(chatID) {
-	await bot.sendMessage(
+	await sendText(
 		chatID,
 		"Ваш вопрос будет передан операторам. Уверены, что хотите продолжить?",
 		config.confirmQuestion
@@ -159,13 +127,13 @@ bot.on("message", async (msg) => {
 	const senderID = msg.chat.id;
 	const text = msg.text;
 
-	// Is this operator replying to someone?
+	// Operator's reply
 	if (pendingReplies.has(senderID)) {
 		const targetUserID = pendingReplies.get(senderID);
 		pendingReplies.delete(senderID); // clear after one reply
 
-		await bot.sendMessage(targetUserID, `💬 Ответ от оператора:\n\n${text}`);
-		await bot.sendMessage(senderID, `✅ Ответ отправлен.`);
+		await sendText(targetUserID, `💬 Ответ от оператора:\n\n${text}`);
+		await sendText(senderID, `✅ Ответ отправлен.`);
 		return;
 	}
 
@@ -176,7 +144,7 @@ bot.on("message", async (msg) => {
 		// Forward to operator
 		const operatorsChatIDs = config.operatorsIDs;
 		operatorsChatIDs.forEach(async (id) => {
-			await bot.sendMessage(
+			await sendText(
 				id,
 				`📩 Вопрос от ${nameOfUser} (@${
 					msg.chat.username || "нет username"
@@ -196,10 +164,7 @@ bot.on("message", async (msg) => {
 			);
 		});
 
-		await bot.sendMessage(
-			chatID,
-			"✅ Ваш вопрос передан операторам. Спасибо!"
-		);
+		await sendText(chatID, "✅ Ваш вопрос передан операторам. Спасибо!");
 		await sendMainMenu(chatID);
 		return;
 	}
@@ -207,10 +172,7 @@ bot.on("message", async (msg) => {
 	if (messageText.toLowerCase() == "/start") {
 		clearChat(chatID);
 
-		await bot.sendMessage(
-			chatID,
-			`Приветствую, ${nameOfUser} \n \nЭто бот ЦРБ`
-		);
+		await sendText(chatID, `Приветствую, ${nameOfUser} \n \nЭто бот ЦРБ`);
 
 		await sendMainMenu(chatID);
 	} else if (messageText.toLowerCase() == "/faq") {
@@ -236,14 +198,26 @@ bot.on("callback_query", async (msg) => {
 		console.error("Failed to delete previous menu message:", error);
 	}
 
+	if (data == "main") {
+		await sendMainMenu(chatID);
+	}
 	if (data == "schedule") {
 		await sendSchedule(chatID);
 	}
+	if (data == "contacts") {
+		await sendContacts(chatID);
+	}
+	if (data == "appointment") {
+		await sendAppointment(chatID);
+	}
+	if (data == "examination") {
+		await sendExamination(chatID);
+	}
+	if (data == "researches") {
+		await sendResearches(chatID);
+	}
 	if (data == "faq") {
 		await sendFAQ(chatID);
-	}
-	if (data == "main") {
-		await sendMainMenu(chatID);
 	}
 
 	// Question
@@ -261,6 +235,33 @@ bot.on("callback_query", async (msg) => {
 		);
 		awaitingQuestion.set(chatID, true);
 	}
+
+	// Researches
+	if (data == "research_lab") {
+		await sendText(chatID, config.textsList.researches.lab_research, {
+			reply_markup: config.mainMenu.backButton.reply_markup,
+		})
+	}
+	if (data == "research_ultrasound") {
+		await sendText(chatID, `Подготовка к УЗИ...`, {
+			reply_markup: {
+				inline_keyboard: [
+					[
+						{
+							text: `брюшной полости, почек, мочевого пузыря`,
+							callback_data: "брюшной полости, почек, мочевого пузыря",
+						},
+					],
+					...config.mainMenu.backButton.reply_markup.inline_keyboard
+				]
+			}
+		})
+	}
+	if(config.textsList.researches.ultrasound_research.data){
+		await sendText(chatID, config.textsList.researches.ultrasound_research.data, {
+			reply_markup: config.mainMenu.backButton,
+		})
+	}
 });
 
 bot.on("callback_query", async (query) => {
@@ -273,7 +274,10 @@ bot.on("callback_query", async (query) => {
 		// Save that operator is now replying to this user
 		pendingReplies.set(operatorID, userChatID);
 
-		await bot.sendMessage(operatorID, `✍️ Напишите сообщение, которое будет отправлено пользователю.`);
+		await sendText(
+			operatorID,
+			`✍️ Напишите сообщение, которое будет отправлено пользователю.`
+		);
 		await bot.answerCallbackQuery(query.id);
 	}
 });
