@@ -240,27 +240,72 @@ bot.on("callback_query", async (msg) => {
 	if (data == "research_lab") {
 		await sendText(chatID, config.textsList.researches.lab_research, {
 			reply_markup: config.mainMenu.backButton.reply_markup,
-		})
+		});
 	}
 	if (data == "research_ultrasound") {
 		await sendText(chatID, `Подготовка к УЗИ...`, {
 			reply_markup: {
 				inline_keyboard: [
-					[
-						{
-							text: `брюшной полости, почек, мочевого пузыря`,
-							callback_data: "брюшной полости, почек, мочевого пузыря",
-						},
-					],
-					...config.mainMenu.backButton.reply_markup.inline_keyboard
-				]
-			}
-		})
+					...config.ultrasoundResearchesButtons.reply_markup
+						.inline_keyboard,
+					...config.mainMenu.backButton.reply_markup.inline_keyboard,
+				],
+			},
+		});
 	}
-	if(config.textsList.researches.ultrasound_research.data){
-		await sendText(chatID, config.textsList.researches.ultrasound_research.data, {
-			reply_markup: config.mainMenu.backButton,
-		})
+	if (data == "abdominal_cavity") {
+		await sendText(
+			chatID,
+			config.textsList.researches.ultrasound_research.abdominal_cavity,
+			{
+				reply_markup: config.mainMenu.backButton.reply_markup,
+			}
+		);
+	}
+	if (data == "abdominal_cavity_pregnancy") {
+		await sendText(
+			chatID,
+			config.textsList.researches.ultrasound_research.abdominal_cavity_pregnancy,
+			{
+				reply_markup: config.mainMenu.backButton.reply_markup,
+			}
+		);
+	}
+	if (data == "small_pelvis") {
+		await sendText(
+			chatID,
+			config.textsList.researches.ultrasound_research.small_pelvis,
+			{
+				reply_markup: config.mainMenu.backButton.reply_markup,
+			}
+		);
+	}
+	if (data == "prostate_gland") {
+		await sendText(
+			chatID,
+			config.textsList.researches.ultrasound_research.prostate_gland,
+			{
+				reply_markup: config.mainMenu.backButton.reply_markup,
+			}
+		);
+	}
+	if (data == "bladder") {
+		await sendText(
+			chatID,
+			config.textsList.researches.ultrasound_research.bladder,
+			{
+				reply_markup: config.mainMenu.backButton.reply_markup,
+			}
+		);
+	}
+	if (data == "mammary_glands") {
+		await sendText(
+			chatID,
+			config.textsList.researches.ultrasound_research.mammary_glands,
+			{
+				reply_markup: config.mainMenu.backButton.reply_markup,
+			}
+		);
 	}
 });
 
