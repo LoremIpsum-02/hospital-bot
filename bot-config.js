@@ -108,7 +108,7 @@ module.exports = {
 		},
 	},
 
-	operatorsIDs: [1443379546],
+	operatorsIDs: [1443379546, 962256137],
 
 	ultrasoundResearchesButtons: {
 		reply_markup: {
