@@ -41,6 +41,17 @@ async function sendText(chatID, text, params) {
 	messagesStore.set(chatID, [...IDs, sent.message_id]);
 }
 
+// Send image function
+async function sendImage(chatID, image, params) {
+	const sent = await bot.sendPhoto(chatID, image, {
+		disable_web_page_preview: true,
+		...params,
+	});
+
+	const IDs = messagesStore.get(chatID) || [];
+	messagesStore.set(chatID, [...IDs, sent.message_id]);
+}
+
 // Сообщения
 async function sendMainMenu(chatID) {
 	return await sendText(
@@ -54,9 +65,11 @@ async function sendUnknownCommand(chatID) {
 }
 
 async function sendSchedule(chatID) {
-	return await sendText(chatID, config.textsList.schedule, {
+	await sendText(chatID, config.textsList.schedule, {
 		reply_markup: config.mainMenu.backButton.reply_markup,
 	});
+
+	await sendImage(chatID, image_map)
 }
 
 async function sendContacts(chatID) {
@@ -116,6 +129,9 @@ async function forwardQuestion(chatID) {
 	await bot.sendMessage(chatID, "Ваш вопрос передан");
 }
 
+const image_label = "./media/images/label.jpg"
+const image_map = "./media/images/map.jpg"
+
 // Receive message
 bot.on("message", async (msg) => {
 	const nameOfUser = msg.chat.first_name;
@@ -173,6 +189,8 @@ bot.on("message", async (msg) => {
 		clearChat(chatID);
 
 		await sendText(chatID, `Приветствую, ${nameOfUser} \n \nЭто бот ЦРБ`);
+		
+		await sendImage(chatID, image_label)
 
 		await sendMainMenu(chatID);
 	} else if (messageText.toLowerCase() == "/faq") {
@@ -325,6 +343,11 @@ bot.on("callback_query", async (query) => {
 		);
 		await bot.answerCallbackQuery(query.id);
 	}
+});
+
+// Error log
+bot.on('polling_error', (error) => {
+  console.log(error.code);  // => 'EFATAL'
 });
 
 console.log("The bot started successfully");
