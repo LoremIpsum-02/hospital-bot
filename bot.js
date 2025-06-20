@@ -347,7 +347,7 @@ bot.on("callback_query", async (query) => {
 
 // Error log
 bot.on('polling_error', (error) => {
-  console.log(error.code);  // => 'EFATAL'
+  console.error(error);
 });
 
 console.log("The bot started successfully");
