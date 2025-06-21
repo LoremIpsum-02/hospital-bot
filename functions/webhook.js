@@ -5,10 +5,6 @@ const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { webHook: true }); // webhook mode!
 bot.setWebHook(`${process.env.NETLIFY_URL}/api/bot`);
 
-bot.onText(/\/start/, (msg) => {
-	bot.sendMessage(msg.chat.id, "Netlify. The bot started successfully");
-});
-
 exports.handler = async (event) => {
 	if (event.httpMethod !== "POST") {
 		return { statusCode: 200, body: "OK" };
