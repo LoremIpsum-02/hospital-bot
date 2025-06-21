@@ -137,8 +137,8 @@ async function forwardQuestion(chatID) {
 }
 
 // Pictures
-const image_label = fs.createReadStream("./media/images/label.jpg");
-const image_map = fs.createReadStream("./media/images/map.jpg");
+const image_label = fs.createReadStream("../media/images/label.jpg");
+const image_map = fs.createReadStream("../media/images/map.jpg");
 
 // Receive message
 bot.on("message", async (msg) => {
