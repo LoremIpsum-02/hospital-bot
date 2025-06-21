@@ -6,7 +6,7 @@ exports.handler = async (event) => {
 	}
 	try {
 		const update = JSON.parse(event.body);
-		await bot.handleUpdate(update); // ✅ Correct method
+		await bot.processUpdate(update); // ✅ Correct method
 		return { statusCode: 200, body: "" };
 	} catch (err) {
 		console.error("Webhook error:", err);
