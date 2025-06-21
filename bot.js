@@ -3,6 +3,7 @@ require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 const config = require("./bot-config");
 const fs = require("fs")
+const path = require("path")
 
 // Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
@@ -137,8 +138,11 @@ async function forwardQuestion(chatID) {
 }
 
 // Pictures
-const image_label = fs.createReadStream("../media/images/label.jpg");
-const image_map = fs.createReadStream("../media/images/map.jpg");
+const image_label_path = path.join(__dirname, "../media/images/label.jpg");
+const image_label = fs.createReadStream(image_label_path);
+
+const image_map_path = path.join(__dirname, "../media/images/map.jpg");
+const image_map = fs.createReadStream(image_map_path);
 
 // Receive message
 bot.on("message", async (msg) => {
