@@ -1,6 +1,8 @@
+// Essentials
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 const config = require("./bot-config");
+const fs = require("fs")
 
 // Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
@@ -49,6 +51,8 @@ async function sendImage(chatID, image, params) {
 	const sent = await bot.sendPhoto(chatID, image, {
 		disable_web_page_preview: true,
 		...params,
+	}).catch((error) => {
+		console.error("Error sending image : ", error)
 	});
 
 	const IDs = messagesStore.get(chatID) || [];
@@ -132,8 +136,9 @@ async function forwardQuestion(chatID) {
 	await bot.sendMessage(chatID, "Ваш вопрос передан");
 }
 
-const image_label = "./media/images/label.jpg";
-const image_map = "./media/images/map.jpg";
+// Pictures
+const image_label = fs.createReadStream("./media/images/label.jpg");
+const image_map = fs.createReadStream("./media/images/map.jpg");
 
 // Receive message
 bot.on("message", async (msg) => {
