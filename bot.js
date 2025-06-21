@@ -6,7 +6,9 @@ const config = require("./bot-config");
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
 	webHook: true
 });
-bot.setWebHook(`${process.env.NETLIFY_URL}/api/bot`);
+bot.setWebHook(`${process.env.NETLIFY_URL}/api/bot`, {
+	certificate: "./crt.pem"
+});
 
 const messagesStore = new Map();
 
