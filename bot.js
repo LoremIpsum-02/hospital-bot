@@ -352,4 +352,6 @@ bot.on("polling_error", (error) => {
 	console.error(error);
 });
 
+module.exports = bot
+
 console.log("The bot started successfully");
