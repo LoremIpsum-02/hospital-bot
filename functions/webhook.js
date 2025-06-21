@@ -1,9 +1,4 @@
-require("dotenv").config();
-const TelegramBot = require("node-telegram-bot-api");
-
-const token = process.env.TELEGRAM_BOT_TOKEN;
-const bot = new TelegramBot(token, { webHook: true }); // webhook mode!
-bot.setWebHook(`${process.env.NETLIFY_URL}/api/bot`);
+const bot = require("../bot.js")
 
 exports.handler = async (event) => {
 	if (event.httpMethod !== "POST") {

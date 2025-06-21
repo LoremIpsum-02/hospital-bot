@@ -3,7 +3,10 @@ const TelegramBot = require("node-telegram-bot-api");
 const config = require("./bot-config");
 
 // Инициализация бота
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
+	webHook: true
+});
+bot.setWebHook(`${process.env.NETLIFY_URL}/api/bot`);
 
 const messagesStore = new Map();
 
