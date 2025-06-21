@@ -3,9 +3,7 @@ const TelegramBot = require("node-telegram-bot-api");
 const config = require("./bot-config");
 
 // Инициализация бота
-const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
-	// polling: true,
-});
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 
 const messagesStore = new Map();
 
@@ -69,7 +67,7 @@ async function sendSchedule(chatID) {
 		reply_markup: config.mainMenu.backButton.reply_markup,
 	});
 
-	await sendImage(chatID, image_map)
+	await sendImage(chatID, image_map);
 }
 
 async function sendContacts(chatID) {
@@ -129,8 +127,8 @@ async function forwardQuestion(chatID) {
 	await bot.sendMessage(chatID, "Ваш вопрос передан");
 }
 
-const image_label = "./media/images/label.jpg"
-const image_map = "./media/images/map.jpg"
+const image_label = "./media/images/label.jpg";
+const image_map = "./media/images/map.jpg";
 
 // Receive message
 bot.on("message", async (msg) => {
@@ -189,8 +187,8 @@ bot.on("message", async (msg) => {
 		clearChat(chatID);
 
 		await sendText(chatID, `Приветствую, ${nameOfUser} \n \nЭто бот ЦРБ`);
-		
-		await sendImage(chatID, image_label)
+
+		await sendImage(chatID, image_label);
 
 		await sendMainMenu(chatID);
 	} else if (messageText.toLowerCase() == "/faq") {
@@ -283,7 +281,8 @@ bot.on("callback_query", async (msg) => {
 	if (data == "abdominal_cavity_pregnancy") {
 		await sendText(
 			chatID,
-			config.textsList.researches.ultrasound_research.abdominal_cavity_pregnancy,
+			config.textsList.researches.ultrasound_research
+				.abdominal_cavity_pregnancy,
 			{
 				reply_markup: config.mainMenu.backButton.reply_markup,
 			}
@@ -346,8 +345,8 @@ bot.on("callback_query", async (query) => {
 });
 
 // Error log
-bot.on('polling_error', (error) => {
-  console.error(error);
+bot.on("polling_error", (error) => {
+	console.error(error);
 });
 
 console.log("The bot started successfully");
