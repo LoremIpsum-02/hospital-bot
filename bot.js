@@ -4,7 +4,7 @@ const config = require("./bot-config");
 
 // Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
-	polling: true,
+	// polling: true,
 });
 
 const messagesStore = new Map();
