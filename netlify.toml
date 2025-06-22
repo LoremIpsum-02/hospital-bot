@@ -7,7 +7,4 @@
   status = 200
 
 [functions]
-  included_files = [
-	"functions/media/images/*.jpg",
-	"media/images/*.jpg",
-  ]
+  included_files = ["functions/media/images/*.jpg"]
