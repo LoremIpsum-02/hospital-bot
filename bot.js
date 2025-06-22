@@ -138,10 +138,10 @@ async function forwardQuestion(chatID) {
 }
 
 // Pictures
-const image_label_path = path.join(__dirname, "media", "images", "label.jpg");
+const image_label_path = path.join(__dirname, "..", "media", "images", "label.jpg");
 const image_label = fs.createReadStream(image_label_path);
 
-const image_map_path = path.join(__dirname, "media", "images", "label.jpg");
+const image_map_path = path.join(__dirname, "..", "media", "images", "label.jpg");
 const image_map = fs.createReadStream(image_map_path);
 
 // Receive message

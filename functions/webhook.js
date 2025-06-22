@@ -1,6 +1,3 @@
-require("./media/images/label.jpg");
-require("./media/images/map.jpg");
-
 const bot = require("../bot.js");
 
 exports.handler = async (event) => {
