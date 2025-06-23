@@ -2,15 +2,12 @@
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 const config = require("./bot-config");
-const fs = require("fs")
-const path = require("path")
+const fs = require("fs");
+const path = require("path");
 
 // Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
-	webHook: true
-});
-bot.setWebHook(`${process.env.NETLIFY_URL}/api/bot`, {
-	certificate: "./crt.pem"
+	polling: true,
 });
 
 const messagesStore = new Map();
@@ -49,12 +46,14 @@ async function sendText(chatID, text, params) {
 
 // Send image function
 async function sendImage(chatID, image, params) {
-	const sent = await bot.sendPhoto(chatID, image, {
-		disable_web_page_preview: true,
-		...params,
-	}).catch((error) => {
-		console.error("Error sending image : ", error)
-	});
+	const sent = await bot
+		.sendPhoto(chatID, image, {
+			disable_web_page_preview: true,
+			...params,
+		})
+		.catch((error) => {
+			console.error("Error sending image : ", error);
+		});
 
 	const IDs = messagesStore.get(chatID) || [];
 	messagesStore.set(chatID, [...IDs, sent.message_id]);
@@ -133,19 +132,9 @@ async function confirmQuestion(chatID) {
 	);
 }
 
-async function forwardQuestion(chatID) {
-	await bot.sendMessage(chatID, "Ваш вопрос передан");
-}
-
 // Pictures
-const image_label_path = path.resolve(process.cwd(), "media", "images", "label.jpg");
-const image_label = fs.createReadStream("./media/images/label.jpg");
-
-const image_map_path = path.resolve(process.cwd(), "media", "images", "label.jpg");
-const image_map = fs.createReadStream("./media/images/map.jpg");
-
-console.log("image_label_path : ", image_label_path)
-console.log("image_label : ", image_label)
+const image_label = "./media/images/label.jpg";
+const image_map = "./media/images/map.jpg";
 
 // Receive message
 bot.on("message", async (msg) => {
@@ -174,26 +163,32 @@ bot.on("message", async (msg) => {
 
 		// Forward to operator
 		const operatorsChatIDs = config.operatorsIDs;
-		operatorsChatIDs.forEach(async (id) => {
-			await sendText(
-				id,
-				`📩 Вопрос от ${nameOfUser} (@${
-					msg.chat.username || "нет username"
-				}):\n\n${messageText}`,
-				{
-					reply_markup: {
-						inline_keyboard: [
-							[
-								{
-									text: "✉️ Ответить",
-									callback_data: `replyTo_${chatID}`, // contains the user’s ID
-								},
+		for (const id of operatorsChatIDs) {
+			try {
+				await sendText(
+					id,
+					`📩 Вопрос от ${nameOfUser} (@${
+						msg.chat.username || "нет username"
+					}):\n\n${messageText}`,
+					{
+						parse_mode: "HTML",
+						reply_markup: {
+							inline_keyboard: [
+								[
+									{
+										text: "✉️ Ответить",
+										callback_data: `replyTo_${chatID}`,
+									},
+								],
 							],
-						],
-					},
-				}
-			);
-		});
+						},
+					}
+				);
+			} catch (err) {
+				console.error(`Error forwarding to operator ${id}:`, err);
+				// optionally notify someone or log into file/db
+			}
+		}
 
 		await sendText(chatID, "✅ Ваш вопрос передан операторам. Спасибо!");
 		await sendMainMenu(chatID);
@@ -366,6 +361,6 @@ bot.on("polling_error", (error) => {
 	console.error(error);
 });
 
-module.exports = bot
+// module.exports = bot
 
 console.log("The bot started successfully");
