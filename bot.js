@@ -8,6 +8,9 @@ const path = require("path");
 // Инициализация бота
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
 	polling: true,
+	request: {
+		agent: new require("https").Agent({ keepAlive: true, maxSockets: 10 }),
+	},
 });
 
 const messagesStore = new Map();
@@ -17,6 +20,18 @@ bot.setMyCommands(config.commands);
 
 const awaitingQuestion = new Map();
 const pendingReplies = new Map();
+
+// async function safeSend(fn) {
+// 	try {
+// 		return await fn();
+// 	} catch (err) {
+// 		if (err.code === "ECONNRESET") {
+// 			console.warn("Connection reset — retrying...");
+// 			return await fn();
+// 		}
+// 		throw err;
+// 	}
+// }
 
 // Clear chat
 async function clearChat(chatID) {
