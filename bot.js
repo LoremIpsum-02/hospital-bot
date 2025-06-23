@@ -6,12 +6,34 @@ const fs = require("fs");
 const path = require("path");
 
 // Инициализация бота
+const agent = new require("https").Agent({ keepAlive: true });
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, {
 	polling: true,
 	request: {
-		agent: new require("https").Agent({ keepAlive: true, maxSockets: 10 }),
+		agent,
 	},
 });
+
+async function startBot() {
+	while (true) {
+		try {
+			bot.startPolling({ restart: true });
+			console.log("Bot started.");
+			break;
+		} catch (err) {
+			console.error("Start failed:", err);
+			await new Promise((r) => setTimeout(r, 5000));
+		}
+	}
+
+	bot.on("error", async (err) => {
+		console.error("Polling error:", err);
+		if (err.code === "ECONNRESET") {
+			bot.stopPolling();
+			startBot(); // restart loop
+		}
+	});
+}
 
 const messagesStore = new Map();
 
@@ -374,8 +396,24 @@ bot.on("callback_query", async (query) => {
 // Error log
 bot.on("polling_error", (error) => {
 	console.error(error);
+
+	// Stop and restart after a delay
+	bot.stopPolling();
+	setTimeout(() => bot.startPolling(), 5000);
 });
 
 // module.exports = bot
+
+startBot();
+
+setInterval(async () => {
+	try {
+		await bot.getMe();
+	} catch (err) {
+		console.warn("Health check failed:", err);
+		bot.stopPolling();
+		startBot();
+	}
+}, 5 * 60 * 1000);
 
 console.log("The bot started successfully");
